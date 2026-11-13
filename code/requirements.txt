@@ -1,0 +1,6 @@
+numpy==2.0.2
+scipy==1.13.1
+pandas==2.3.3
+arch==7.2.0
+numba==0.60.0
+matplotlib>=3.9,<4

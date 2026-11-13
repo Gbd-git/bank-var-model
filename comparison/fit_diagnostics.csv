@@ -1,0 +1,26 @@
+model,crossings,events,details
+hs,0,0,{}
+normal,0,0,{}
+student,0,0,{}
+mc_normal,0,0,{}
+mc_student,0,0,{}
+garch_normal,0,0,{}
+garch_t,0,0,{}
+garch_skewt,0,1,"{""optimizer_retry"": 1}"
+gjr_normal,0,2,"{""optimizer_retry"": 1, ""carry_previous_fit"": 1}"
+gjr_t,0,0,{}
+gjr_skewt,0,1,"{""carry_previous_fit"": 1}"
+pot_gpd,0,0,{}
+garch_t_evt,0,0,{}
+garch_t_fhs,0,0,{}
+caviar_sav,109,8,"{""finite_nonconverged_caviar"": 8}"
+caviar_as,227,4,"{""finite_nonconverged_caviar"": 4}"
+quantile_regression,114,0,{}
+ml_kernel,421,0,{}
+ml_qrf,0,0,{}
+ml_hgbr,62,0,{}
+ml_mlp,346,0,{}
+ml_lstm,39,0,{}
+ml_gru,16,0,{}
+ml_tcn,321,0,{}
+ml_transformer,115,0,{}
