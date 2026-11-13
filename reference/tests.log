@@ -1,9 +1,0 @@
-test_csv_npz_and_source_alignment (test_data.DataTests) ... ok
-test_invalid_configuration (test_model.ModelTests) ... ok
-test_refit_schedule_and_causality (test_model.ModelTests) ... ok
-test_skewt_quantiles (test_model.ModelTests) ... ok
-
-----------------------------------------------------------------------
-Ran 4 tests in 0.082s
-
-OK
