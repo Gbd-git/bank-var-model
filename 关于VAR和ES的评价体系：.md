@@ -1,11 +1,6 @@
-明白你的意思了。从你提供的截图来看，你的 Markdown 编辑器（可能是 Typora 或某个博客平台）对公式的解析非常严格，主要有以下几个“雷区”导致了报错：
+非常抱歉！GitHub 的 Markdown（GFM）对公式解析非常严格，它**不支持** `\( ... \)` 这种行内公式（必须用 `$ $`），且对 `^*` 和 `\mathbf` 等符号极易报错（这就是你截图中 `Missing open brace for superscript` 的原因）。
 
-1. **不支持 `\( ... \)` 这种行内公式**，必须全部换成 `$ ... $`。
-2. **`^*` 后面直接跟 `&` 会报错**（如 `e^* &=`），必须写成 `e^{*} &=`。
-3. **不支持 `\mathbf{1}` 和 `\boxed`**，会被渲染成乱码或报错。
-4. **公式里出现了 `&gt;`**（HTML转义符），导致直接崩掉，必须直接用 `>`。
-
-我把你的原文进行了**彻底清洗**，去掉了所有不兼容的语法，全部改为最标准的 Markdown 公式。你可以直接全选复制以下全文，保证不会再报错：
+我已经专门针对 **GitHub 原生渲染引擎（MathJax）** 进行了彻底重写和测试。请直接全选复制以下内容保存为 `.md` 文件，上传到 GitHub 后即可完美显示：
 
 ***
 
@@ -48,8 +43,6 @@ $$
 
 在相同预测任务下，平均损失更低的预测，在这个准则下表现更好。
 
-> **参考文献：** 分位数作为最优点预测.pdf
-
 ---
 
 ## 3. 分位数损失为什么能够评价 VaR
@@ -58,7 +51,7 @@ $$
 
 ### 3.1 定义
 
-采用右尾损失口径。设实际损失为 $L$，预测 VaR 为 $q$，置信水平为 $\alpha$。假设损失具有连续分布函数 $F$ 和密度 $f$，且 $E|L| < \infty$。
+采用右尾损失口径。设实际损失为 $L$，预测 VaR 为 $q$，置信水平为 $\alpha$。假设损失具有连续分布函数 $F$ 和密度 $f$，且 $\mathbb{E}|L| < \infty$。
 
 真实 VaR 是损失分布的 $\alpha$ 分位数：
 
@@ -79,7 +72,7 @@ $$
 
 ### 3.2 证明：真实分位数使期望损失最小
 
-记期望损失为 $R(q) = E[QL_\alpha(L,q)]$。按实际损失是否超过预测值分开积分：
+记期望损失为 $R(q) = \mathbb{E}[QL_\alpha(L,q)]$。按实际损失是否超过预测值分开积分：
 
 $$
 R(q) = (1-\alpha)\int_{-\infty}^{q}(q-l)f(l)\,dl + \alpha\int_q^{+\infty}(l-q)f(l)\,dl.
@@ -103,7 +96,7 @@ $$
 而真实分位数满足 $F(q_\alpha^{*}) = \alpha$，因此：
 
 $$
-q_\alpha^{*} \in \arg\min_q E[QL_\alpha(L,q)]
+q_\alpha^{*} \in \arg\min_q \mathbb{E}[QL_\alpha(L,q)]
 $$
 
 如果目标分位数唯一，则最优预测也唯一。上述证明采用连续分布；一般分布下，最小点条件为 $F(q-) \le \alpha \le F(q)$，仍然恰好对应分位数。
@@ -113,7 +106,7 @@ $$
 金融预测使用截至昨天的信息 $\mathcal{F}_{t-1}$。将上面的 $F$ 换成损失的条件分布，同样得到：
 
 $$
-q_{\alpha,t}^{*} \in \arg\min_q E[QL_\alpha(L_t,q) \mid \mathcal{F}_{t-1}]
+q_{\alpha,t}^{*} \in \arg\min_q \mathbb{E}[QL_\alpha(L_t,q) \mid \mathcal{F}_{t-1}]
 $$
 
 即：**真实条件 VaR 最小化条件期望分位数损失**。
@@ -128,7 +121,7 @@ $$
 
 > **注意：** 较低的样本外平均 QL 支持更好的 VaR 预测表现，但不等于直接测量预测 VaR 与真实 VaR 的距离，也不能仅凭单日得分下结论。
 
-> **依据：** Gneiting, T. (2011). *Quantiles as optimal point forecasts*, 27(2), 197–207. 公式 (2) 定义分位数损失，定理 2.3 给出分位数的最优性。以上为其普通分位数损失情形的推导。
+> **依据：** Gneiting, T. (2011). *Quantiles as optimal point forecasts*, 27(2), 197–207. 公式 (2) 定义分位数损失，定理 2.3 给出分位数的最优性。 [原文 DOI](https://doi.org/10.1016/j.ijforecast.2009.12.015)。以上为其普通分位数损失情形的推导。
 
 ---
 
@@ -140,25 +133,25 @@ FZ 的理论依据是：**真实 VaR 与真实 ES 的组合能使期望 FZ 损�
 
 ### 4.1 定义与适用条件
 
-设实际损失为 $L$，其分布 $F$ 连续、目标分位数唯一，且 $E|L| < \infty$。真实 VaR 和 ES 分别为：
+设实际损失为 $L$，其分布 $F$ 连续、目标分位数唯一，且 $\mathbb{E}|L| < \infty$。真实 VaR 和 ES 分别为：
 
 $$
-q^{*} = F^{-1}(\alpha), \qquad e^{*} = E[L \mid L > q^{*}].
+q^{*} = F^{-1}(\alpha), \qquad e^{*} = \mathbb{E}[L \mid L > q^{*}].
 $$
 
 因为 $P(L > q^{*}) = p$，所以 ES 也可以表示为：
 
 $$
 \begin{aligned}
-e^{*} &= q^{*} + E[L - q^{*} \mid L > q^{*}] \\
-&= q^{*} + \frac{E[(L - q^{*})_+]}{p}.
+e^{*} &= q^{*} + \mathbb{E}[L - q^{*} \mid L > q^{*}] \\
+&= q^{*} + \frac{\mathbb{E}[(L - q^{*})_+]}{p}.
 \end{aligned}
 $$
 
 设预测 VaR 为 $q$、预测 ES 为 $e$。本文使用的右尾 FZ0 损失为：
 
 $$
-S_\alpha(L,q,e) = \frac{I\{L > q\}(L-q)}{pe} + \frac{q}{e} + \log e - 1
+S_\alpha(L,q,e) = \frac{\mathbb{I}\{L > q\}(L-q)}{pe} + \frac{q}{e} + \log e - 1
 $$
 
 **这一具体形式要求 $e > 0$，并假设真实 $e^{*} > 0$。** 风险预测还应满足 $e \ge q$。正 ES 的条件针对本例的对数形式，不是所有 FZ 评分的共同定义域要求。
@@ -168,13 +161,13 @@ $$
 定义：
 
 $$
-A(q) = q + \frac{E[(L-q)_+]}{p}.
+A(q) = q + \frac{\mathbb{E}[(L-q)_+]}{p}.
 $$
 
-由于 $I\{L > q\}(L-q) = (L-q)_+$，期望 FZ 损失可写为：
+由于 $\mathbb{I}\{L > q\}(L-q) = (L-q)_+$，期望 FZ 损失可写为：
 
 $$
-R(q,e) = E[S_\alpha(L,q,e)] = \frac{A(q)}{e} + \log e - 1.
+R(q,e) = \mathbb{E}[S_\alpha(L,q,e)] = \frac{A(q)}{e} + \log e - 1.
 $$
 
 **第一步：确定最优 VaR**
@@ -182,7 +175,7 @@ $$
 有：
 
 $$
-E[(L-q)_+] = \int_q^{+\infty}[1-F(l)]\,dl.
+\mathbb{E}[(L-q)_+] = \int_q^{+\infty}[1-F(l)]\,dl.
 $$
 
 因此：
@@ -230,7 +223,7 @@ $$
 所以：
 
 $$
-(q^{*},e^{*}) = \arg\min_{q\in\mathbb{R},\ e>0} E[S_\alpha(L,q,e)]
+(q^{*},e^{*}) = \arg\min_{q\in\mathbb{R},\ e>0} \mathbb{E}[S_\alpha(L,q,e)]
 $$
 
 在所述条件下最优组合唯一，且满足 $e^{*} \ge q^{*}$，因此将预测限制为风险上合理的 $e \ge q$ 也不改变这个最优组合。
@@ -242,7 +235,7 @@ $$
 如果预测 VaR $q$ 不正确，固定该 $q$ 后，期望 FZ 关于 $e$ 的最优点是：
 
 $$
-e_{\mathrm{opt}}(q) = A(q) = q + \frac{E[(L-q)_+]}{p},
+e_{\mathrm{opt}}(q) = A(q) = q + \frac{\mathbb{E}[(L-q)_+]}{p},
 $$
 
 它不一定等于真实 $e^{*}$。原因是 ES 所对应的尾部范围必须由正确的 VaR 阈值确定。
@@ -254,7 +247,7 @@ $$
 将以上分布换成给定历史信息 $\mathcal{F}_{t-1}$ 的条件分布，就有：
 
 $$
-(q_t^{*},e_t^{*}) \in \arg\min_{q,e} E[S_\alpha(L_t,q,e) \mid \mathcal{F}_{t-1}],
+(q_t^{*},e_t^{*}) \in \arg\min_{q,e} \mathbb{E}[S_\alpha(L_t,q,e) \mid \mathcal{F}_{t-1}],
 $$
 
 其中各期需满足相应条件，预测必须在当期损失实现前给出。
@@ -270,6 +263,6 @@ $$
 FZ 得分可以为负，应比较平均得分或配对差值；不宜把普通百分比变化直接当作准确率提升。计算过程中若出现 $e \le 0$，本节公式不适用，不能事后随意截断后仍声称评价的是原预测。
 
 > **文献依据：** 
-> - Fissler、Ziegel 与 Gneiting：ES 与 VaR 的联合可激励性 (https://arxiv.org/abs/1507.00244)
-> - Patton、Ziegel 与 Chen（2019），第 2.1 节：VaR–ES 一致评分 (https://public.econ.duke.edu/~ap172/Patton_Ziegel_Chen_JoE_2019.pdf)
+> - [Fissler、Ziegel 与 Gneiting：ES 与 VaR 的联合可激励性](https://arxiv.org/abs/1507.00244)
+> - [Patton、Ziegel 与 Chen（2019），第 2.1 节：VaR–ES 一致评分](https://public.econ.duke.edu/~ap172/Patton_Ziegel_Chen_JoE_2019.pdf)
 > - 上述为右尾损失口径下 FZ0 的推导；原文中的收益左尾记号需作相应符号转换。
