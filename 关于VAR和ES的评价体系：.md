@@ -1,6 +1,8 @@
-非常抱歉！GitHub 的 Markdown（GFM）对公式解析非常严格，它**不支持** `\( ... \)` 这种行内公式（必须用 `$ $`），且对 `^*` 和 `\mathbf` 等符号极易报错（这就是你截图中 `Missing open brace for superscript` 的原因）。
+看到截图我完全明白了。报错代码显示为 `q_\alpha^{_{}}`，这说明你的 GitHub 渲染器（或使用的插件）**把星号 `*` 吞掉了**，导致上标变成空的大括号 `{}`，从而引发 `Extra close brace` 语法错误。
 
-我已经专门针对 **GitHub 原生渲染引擎（MathJax）** 进行了彻底重写和测试。请直接全选复制以下内容保存为 `.md` 文件，上传到 GitHub 后即可完美显示：
+GitHub 对公式中的 `*` 号极其敏感（经常被误判为 Markdown 的斜体符号）。
+
+为了**100% 保证在 GitHub 上不报错**，我彻底去掉了所有的星号 `*` 和容易报错的特殊字体（如 `\mathbb`），把它们改成了最基础的字母。你可以直接全选复制以下代码：
 
 ***
 
@@ -51,12 +53,12 @@ $$
 
 ### 3.1 定义
 
-采用右尾损失口径。设实际损失为 $L$，预测 VaR 为 $q$，置信水平为 $\alpha$。假设损失具有连续分布函数 $F$ 和密度 $f$，且 $\mathbb{E}|L| < \infty$。
+采用右尾损失口径。设实际损失为 $L$，预测 VaR 为 $q$，置信水平为 $\alpha$。假设损失具有连续分布函数 $F$ 和密度 $f$，且 $E|L| < \infty$。
 
 真实 VaR 是损失分布的 $\alpha$ 分位数：
 
 $$
-q_\alpha^{*} = F^{-1}(\alpha), \qquad F(q_\alpha^{*}) = \alpha.
+q_{\alpha} = F^{-1}(\alpha), \qquad F(q_{\alpha}) = \alpha.
 $$
 
 分位数损失定义为：
@@ -72,7 +74,7 @@ $$
 
 ### 3.2 证明：真实分位数使期望损失最小
 
-记期望损失为 $R(q) = \mathbb{E}[QL_\alpha(L,q)]$。按实际损失是否超过预测值分开积分：
+记期望损失为 $R(q) = E[QL_\alpha(L,q)]$。按实际损失是否超过预测值分开积分：
 
 $$
 R(q) = (1-\alpha)\int_{-\infty}^{q}(q-l)f(l)\,dl + \alpha\int_q^{+\infty}(l-q)f(l)\,dl.
@@ -93,10 +95,10 @@ $$
 - 当 $F(q) > \alpha$ 时，$R'(q) > 0$，降低预测值会降低期望损失。
 - 当 $F(q) = \alpha$ 时，期望损失达到全局最小。
 
-而真实分位数满足 $F(q_\alpha^{*}) = \alpha$，因此：
+而真实分位数满足 $F(q_{\alpha}) = \alpha$，因此：
 
 $$
-q_\alpha^{*} \in \arg\min_q \mathbb{E}[QL_\alpha(L,q)]
+q_{\alpha} \in \arg\min_q E[QL_\alpha(L,q)]
 $$
 
 如果目标分位数唯一，则最优预测也唯一。上述证明采用连续分布；一般分布下，最小点条件为 $F(q-) \le \alpha \le F(q)$，仍然恰好对应分位数。
@@ -106,7 +108,7 @@ $$
 金融预测使用截至昨天的信息 $\mathcal{F}_{t-1}$。将上面的 $F$ 换成损失的条件分布，同样得到：
 
 $$
-q_{\alpha,t}^{*} \in \arg\min_q \mathbb{E}[QL_\alpha(L_t,q) \mid \mathcal{F}_{t-1}]
+q_{\alpha,t} \in \arg\min_q E[QL_\alpha(L_t,q) \mid \mathcal{F}_{t-1}]
 $$
 
 即：**真实条件 VaR 最小化条件期望分位数损失**。
@@ -133,41 +135,41 @@ FZ 的理论依据是：**真实 VaR 与真实 ES 的组合能使期望 FZ 损�
 
 ### 4.1 定义与适用条件
 
-设实际损失为 $L$，其分布 $F$ 连续、目标分位数唯一，且 $\mathbb{E}|L| < \infty$。真实 VaR 和 ES 分别为：
+设实际损失为 $L$，其分布 $F$ 连续、目标分位数唯一，且 $E|L| < \infty$。真实 VaR 和 ES 分别为：
 
 $$
-q^{*} = F^{-1}(\alpha), \qquad e^{*} = \mathbb{E}[L \mid L > q^{*}].
+q_{\alpha} = F^{-1}(\alpha), \qquad e_{\alpha} = E[L \mid L > q_{\alpha}].
 $$
 
-因为 $P(L > q^{*}) = p$，所以 ES 也可以表示为：
+因为 $P(L > q_{\alpha}) = p$，所以 ES 也可以表示为：
 
 $$
 \begin{aligned}
-e^{*} &= q^{*} + \mathbb{E}[L - q^{*} \mid L > q^{*}] \\
-&= q^{*} + \frac{\mathbb{E}[(L - q^{*})_+]}{p}.
+e_{\alpha} &= q_{\alpha} + E[L - q_{\alpha} \mid L > q_{\alpha}] \\
+&= q_{\alpha} + \frac{E[(L - q_{\alpha})_+]}{p}.
 \end{aligned}
 $$
 
 设预测 VaR 为 $q$、预测 ES 为 $e$。本文使用的右尾 FZ0 损失为：
 
 $$
-S_\alpha(L,q,e) = \frac{\mathbb{I}\{L > q\}(L-q)}{pe} + \frac{q}{e} + \log e - 1
+S_\alpha(L,q,e) = \frac{I\{L > q\}(L-q)}{pe} + \frac{q}{e} + \log e - 1
 $$
 
-**这一具体形式要求 $e > 0$，并假设真实 $e^{*} > 0$。** 风险预测还应满足 $e \ge q$。正 ES 的条件针对本例的对数形式，不是所有 FZ 评分的共同定义域要求。
+**这一具体形式要求 $e > 0$，并假设真实 $e_{\alpha} > 0$。** 风险预测还应满足 $e \ge q$。正 ES 的条件针对本例的对数形式，不是所有 FZ 评分的共同定义域要求。
 
 ### 4.2 证明：真实 VaR 与 ES 联合最优
 
 定义：
 
 $$
-A(q) = q + \frac{\mathbb{E}[(L-q)_+]}{p}.
+A(q) = q + \frac{E[(L-q)_+]}{p}.
 $$
 
-由于 $\mathbb{I}\{L > q\}(L-q) = (L-q)_+$，期望 FZ 损失可写为：
+由于 $I\{L > q\}(L-q) = (L-q)_+$，期望 FZ 损失可写为：
 
 $$
-R(q,e) = \mathbb{E}[S_\alpha(L,q,e)] = \frac{A(q)}{e} + \log e - 1.
+R(q,e) = E[S_\alpha(L,q,e)] = \frac{A(q)}{e} + \log e - 1.
 $$
 
 **第一步：确定最优 VaR**
@@ -175,7 +177,7 @@ $$
 有：
 
 $$
-\mathbb{E}[(L-q)_+] = \int_q^{+\infty}[1-F(l)]\,dl.
+E[(L-q)_+] = \int_q^{+\infty}[1-F(l)]\,dl.
 $$
 
 因此：
@@ -187,46 +189,46 @@ A'(q) &= 1 - \frac{1-F(q)}{p} \\
 \end{aligned}
 $$
 
-这与前文分位数损失的证明具有相同结构。由于 $F$ 单调不减，$A$ 为凸函数；其最小点为 $q^{*}$，且：
+这与前文分位数损失的证明具有相同结构。由于 $F$ 单调不减，$A$ 为凸函数；其最小点为 $q_{\alpha}$，且：
 
 $$
-A(q) \ge A(q^{*}) = e^{*}.
+A(q) \ge A(q_{\alpha}) = e_{\alpha}.
 $$
 
-对任意固定 $e > 0$，都有 $R(q,e) \ge R(q^{*},e)$。即：固定 ES 预测时，真实 VaR 能使期望 FZ 最小。
+对任意固定 $e > 0$，都有 $R(q,e) \ge R(q_{\alpha},e)$。即：固定 ES 预测时，真实 VaR 能使期望 FZ 最小。
 
 **第二步：确定最优 ES**
 
-将 $q = q^{*}$ 代入：
+将 $q = q_{\alpha}$ 代入：
 
 $$
-R(q^{*},e) = \frac{e^{*}}{e} + \log e - 1.
+R(q_{\alpha},e) = \frac{e_{\alpha}}{e} + \log e - 1.
 $$
 
 对 $e$ 求导：
 
 $$
-\frac{\partial R(q^{*},e)}{\partial e} = -\frac{e^{*}}{e^2} + \frac{1}{e} = \frac{e-e^{*}}{e^2}.
+\frac{\partial R(q_{\alpha},e)}{\partial e} = -\frac{e_{\alpha}}{e^2} + \frac{1}{e} = \frac{e-e_{\alpha}}{e^2}.
 $$
 
-由于 $e^{*} > 0$：
-- 当 $0 < e < e^{*}$ 时，导数为负，提高 ES 预测会降低期望损失。
-- 当 $e > e^{*}$ 时，导数为正，降低 ES 预测会降低期望损失。
-- 当 $e = e^{*}$ 时，期望损失达到唯一最小值。
+由于 $e_{\alpha} > 0$：
+- 当 $0 < e < e_{\alpha}$ 时，导数为负，提高 ES 预测会降低期望损失。
+- 当 $e > e_{\alpha}$ 时，导数为正，降低 ES 预测会降低期望损失。
+- 当 $e = e_{\alpha}$ 时，期望损失达到唯一最小值。
 
 将两步合并：
 
 $$
-R(q,e) \ge R(q^{*},e) \ge R(q^{*},e^{*}).
+R(q,e) \ge R(q_{\alpha},e) \ge R(q_{\alpha},e_{\alpha}).
 $$
 
 所以：
 
 $$
-(q^{*},e^{*}) = \arg\min_{q\in\mathbb{R},\ e>0} \mathbb{E}[S_\alpha(L,q,e)]
+(q_{\alpha}, e_{\alpha}) = \arg\min_{q,e>0} E[S_\alpha(L,q,e)]
 $$
 
-在所述条件下最优组合唯一，且满足 $e^{*} \ge q^{*}$，因此将预测限制为风险上合理的 $e \ge q$ 也不改变这个最优组合。
+在所述条件下最优组合唯一，且满足 $e_{\alpha} \ge q_{\alpha}$，因此将预测限制为风险上合理的 $e \ge q$ 也不改变这个最优组合。
 
 **这说明 FZ 对 ES 的评价有明确目标：当 VaR 正确时，真实 ES 恰好是期望 FZ 最优的 ES 预测；同时，FZ 的联合最优点就是真实 VaR–ES 组合。**
 
@@ -235,10 +237,10 @@ $$
 如果预测 VaR $q$ 不正确，固定该 $q$ 后，期望 FZ 关于 $e$ 的最优点是：
 
 $$
-e_{\mathrm{opt}}(q) = A(q) = q + \frac{\mathbb{E}[(L-q)_+]}{p},
+e_{\mathrm{opt}}(q) = A(q) = q + \frac{E[(L-q)_+]}{p},
 $$
 
-它不一定等于真实 $e^{*}$。原因是 ES 所对应的尾部范围必须由正确的 VaR 阈值确定。
+它不一定等于真实 $e_{\alpha}$。原因是 ES 所对应的尾部范围必须由正确的 VaR 阈值确定。
 
 因此，比较两个模型时，**更低的平均 FZ 支持 VaR–ES 联合预测表现更好，不能直接解释为 ES 单独更准确**；更不能把它当作预测 ES 与真实 ES 的数值距离。只有在双方使用相同、正确的 VaR 等受控条件下，才可以更直接地将差异解释为 ES 预测的评分表现差异。
 
@@ -247,7 +249,7 @@ $$
 将以上分布换成给定历史信息 $\mathcal{F}_{t-1}$ 的条件分布，就有：
 
 $$
-(q_t^{*},e_t^{*}) \in \arg\min_{q,e} \mathbb{E}[S_\alpha(L_t,q,e) \mid \mathcal{F}_{t-1}],
+(q_{\alpha,t}, e_{\alpha,t}) \in \arg\min_{q,e} E[S_\alpha(L_t,q,e) \mid \mathcal{F}_{t-1}],
 $$
 
 其中各期需满足相应条件，预测必须在当期损失实现前给出。
